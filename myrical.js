@@ -83,7 +83,7 @@ var Myrical = (function() {
         uniqueCount = 0,
         wordCount = words.length;
         
-    for (var i = 0; i < words.length; i++) {
+    for (var i = 0, j = words.length; i < j; i++) {
       word = words[i];
       if (countedWords[word]) {
           countedWords[word].count = countedWords[word].count + 1;
@@ -119,7 +119,7 @@ var Myrical = (function() {
            pt = 0;
            var aTypes = types[key];
            
-           for (var i = 0; i < aTypes.length; i++) {
+           for (var i = 0, j = aTypes.length; i < j; i++) {
              if (words[aTypes[i]]) {
                 pt = pt + words[aTypes[i]].count;
              }
@@ -160,17 +160,16 @@ var Myrical = (function() {
         
     // create array of words and sort
     for (var key in countedWords) {
-      if(key in questionWords){
+      if (key in questionWords) {
         questionWords[key] = {};
         questionWords[key].count = countedWords[key].count;
-        if(countedWords[key].count > mostQuestion) { mostQuestion = countedWords[key].count; };
+        if (countedWords[key].count > mostQuestion) { mostQuestion = countedWords[key].count; };
       }
       sortWords.push(countedWords[key]);
     }
     sortWords.sort(compareLength);
     
-    for (var i = 0; i < sortWords.length; i++) {
-      
+    for (var i = 0, j = sortWords.length; i < j; i++) {
       if (sortWords[i].count == 1) {
         threeUnique++
         if (threeUnique == 3) {
@@ -223,7 +222,7 @@ var Myrical = (function() {
   
   var countEmotions = function(countedWords){
     emotionCount = 0;
-    for (var i = 0; i < emotions.length; i++) {
+    for (var i = 0, j = emotions.length; i < j; i++) {
       if (countedWords[emotions[i]]) {
         emotionCount = emotionCount + countedWords[emotions[i]].count;
       }
