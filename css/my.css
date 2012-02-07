@@ -30,3 +30,26 @@ h1 span {
   font-size:1.5em;
   font-weight:bold;
 }
+ul.questions {
+ float: right; 
+ list-style: none;
+ font-size: 2em;
+ line-height:1.5;
+ vertical-align: middle;
+ font-weight: bold;
+ margin: 0;
+}
+ul.questions li {
+ clear: right;
+ margin-bottom: 5px;
+ text-align: right;
+}
+ul.questions li span {
+ background-color: #3399CC;
+ color: #fff;
+ width: 21px;
+ padding-right: 3px;
+ margin-left: 5px;
+ display: block;
+ float: right;
+}
