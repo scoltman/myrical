@@ -1,6 +1,7 @@
 var Myrical = (function() {  
   var filesRead = 0,
       words = [];
+      var emotions = ['fear','fearful','feared','anger','angry','angered','sorrow','sorrowful','joy','joyful','joyless','disgust','digusted','digusted','surprise','suprising','suprised','shame','shameful','ashamed','envy','envious','jealous','jealousy','wonder','wonderful','happiness','happy','happier','unhappiness','amusement','amusing','amusement','funny','funnier','weariness','weary','pride','proud','shame','ashamed','nervous','nervously','nervousness','love','loved','loving','hatred','hate','hated','jateful','hope','hoping','hoped','despair'];
   /**
    * Initialise.
    */
@@ -138,9 +139,9 @@ var Myrical = (function() {
    * Render words object to browser.
    */
   var render = function(countedWords, wordCount, uniqueCount){
-    var percentUnique = Math.round((uniqueCount/wordCount) * 100),
+    var percentUnique = percent(uniqueCount,wordCount),
         restNum = 100 - percentUnique,
-        chart = '<img class="chart-unique" src="http://chart.apis.google.com/chart?chs=293x205&cht=p&chco=3399CC&chds=0,98.333&chd=t:'+percentUnique+','+restNum+'">',
+        chart = '<img title="'+uniqueCount+' unique words" class="chart-unique" src="http://chart.apis.google.com/chart?chs=293x205&cht=p&chco=3399CC&chds=0,98.333&chd=t:'+percentUnique+','+restNum+'">',
         uniqueWords = chart+'<div class="total-words">'+percentUnique+'% Unique Words</div>',
         uniqueExamples = '<p>Such as ',
         subjectType = getType(countedWords),
@@ -189,7 +190,6 @@ var Myrical = (function() {
         perdec = 1;
       
     var minLength = (mostQuestion + '').length;
-
     for (key in questionWords) {
       if (questionWords[key].count > 0) {
         hasQuestions = true;
@@ -197,20 +197,39 @@ var Myrical = (function() {
         if (perdec < minLength) { perdec = minLength }
 
         questionWidth = 21 * perdec;
-        questionList = questionList + '<li><span style="width:'+questionWidth+'px">' + questionWords[key].count + " </span>" + key + "</li>";
+        questionList = questionList + '<li><span style="width:'+questionWidth+'px">' + questionWords[key].count + ' </span>' + key + '</li>';
       }
     }
     
     if (hasQuestions) {
       questionText = '<ul class="questions">' + questionList + '</ul>';
     }
-    $('#content').html(questionText + uniqueWords + uniqueExamples + allAbout);
+    
+    var emotionalness = percent(countEmotions(countedWords),wordCount);
+    var emoText = '';
+    if (emotionalness > 0) {
+      emoText = '<p class="emotional">With ' + emotionalness + '% emotion.</p';
+    } else {
+      emoText = '<p class="emotional">Without even a hint of emotion.</p>';
+    }
+    
+    $('#content').html(questionText + uniqueWords + uniqueExamples + allAbout + emoText);
   
   }
   
+  var percent = function(x,y) {
+    return Math.round((x/y) * 100);
+  }
   
-  var calculateBarWidth = function(){
+  var countEmotions = function(countedWords){
+    emotionCount = 0;
+    for (var i = 0; i < emotions.length; i++) {
+      if (countedWords[emotions[i]]) {
+        emotionCount = emotionCount + countedWords[emotions[i]].count;
+      }
+    }
     
+    return emotionCount;
   }
   
   var compareCount = function(a, b) {
