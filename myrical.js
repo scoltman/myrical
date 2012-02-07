@@ -3,7 +3,18 @@ var Myrical = (function() {
       lastFile = false,
       wordCount = 0,
       uniqueCount = 0;
-    
+  
+  
+  /**
+   * Initialise.
+   */
+  var init = function(){
+    $('#files').change(handleFileSelect);
+  }
+  
+  /**
+   * Handles multiple local file select
+   */  
   var handleFileSelect = function(evt) {
     var files = evt.target.files;
     for (var i = 0, f; f = files[i]; i++) {
@@ -11,6 +22,9 @@ var Myrical = (function() {
     }
   }
   
+  /**
+   * Slices blobs to create a string of file content
+   */
   var readBlob = function(file, flength) {
     var fileWords = [],
         reader = null,
@@ -49,6 +63,9 @@ var Myrical = (function() {
     };
   }
   
+  /**
+   * Match individual words in file content.
+   */  
   var processText = function(fileContents){
     var words = [],
         fileWords = [];
@@ -60,6 +77,10 @@ var Myrical = (function() {
     return words;
   }
   
+  
+  /**
+   * Create object of 'word' to 'frequency' relationship.
+   */
   var processWords = function(words){
     var results = [],
         sameWord = '',
@@ -83,7 +104,9 @@ var Myrical = (function() {
     render(countedWords);
   }
   
-  
+  /**
+   * Work out the most used personal words (you,him).
+   */
   var getType = function(words) {
     var realType = "something",
         pt = 0,
@@ -101,15 +124,10 @@ var Myrical = (function() {
            var aTypes = types[key];
            
            for (var i = 0; i < aTypes.length; i++) {
-             console.log(aTypes[i]);
              if (words[aTypes[i]]) {
-               console.log(words[aTypes[i]]);
                 pt = pt + words[aTypes[i]].count;
-                console.log(words[aTypes[i]].count);
              }
            }
-           
-           console.log(key + ' - ' + pt);
            if (pt > ct) {
              (function(){
                ct = pt;
@@ -120,24 +138,28 @@ var Myrical = (function() {
        
         return realType;
   }
-  var render = function(countedWords){
-    var percentUnique = Math.round((uniqueCount/wordCount) * 100);
-    var restNum = 100 - percentUnique;
-    var chart = '<img class="chart-unique" src="http://chart.apis.google.com/chart?chs=293x205&cht=p&chco=3399CC&chds=0,98.333&chd=t:'+percentUnique+','+restNum+'">';
-    var uniqueWords = chart+'<div class="total-words">'+percentUnique+'% Unique Words</div>';
-    var uniqueExamples = '<p>Such as ';
-    console.log(countedWords);  
-    var subjectType = getType(countedWords);
-    var allAbout = '<p class="all-about">It\'s all about '+subjectType+'.</p>';
-    var sortWords = [];
-    for (var k in countedWords) {
-      console.log(countedWords[k]);
-      sortWords.push(countedWords[k]);
-    } 
   
+  /**
+   * Render words object to browser.
+   */
+  var render = function(countedWords){
+    var percentUnique = Math.round((uniqueCount/wordCount) * 100),
+        restNum = 100 - percentUnique,
+        chart = '<img class="chart-unique" src="http://chart.apis.google.com/chart?chs=293x205&cht=p&chco=3399CC&chds=0,98.333&chd=t:'+percentUnique+','+restNum+'">',
+        uniqueWords = chart+'<div class="total-words">'+percentUnique+'% Unique Words</div>',
+        uniqueExamples = '<p>Such as ',
+        subjectType = getType(countedWords),
+        allAbout = '<p class="all-about">It\'s all about '+subjectType+'.</p>',
+        sortWords = [],
+        threeUnique = 0;
+    
+    // create array of words and sort
+    for (var k in countedWords) {
+      sortWords.push(countedWords[k]);
+    }
     sortWords.sort(compareLength);
-    var threeUnique = 0;
-
+    
+    
     for (var i = 0; i < sortWords.length; i++) {
       
       if (sortWords[i].count == 1) {
@@ -165,11 +187,8 @@ var Myrical = (function() {
     return b.length - a.length;
   }
   
-  var init = function(){
-    $('#files').change(handleFileSelect);
-  }
-
   return {
     init: init
   }
+  
 }());
