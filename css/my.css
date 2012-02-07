@@ -1,0 +1,32 @@
+
+body {
+  padding: 30px 90px;
+}
+h1 {
+ font-size: 20px; 
+ font-weight: bold;
+ margin-bottom: 10px;
+ text-transform: uppercase;
+}
+h1 span {
+ float: right; 
+}
+#content, #files  {
+ margin: 10px 0; 
+}
+#files {
+ display: block; 
+}
+.chart-unique {
+  float: left;
+  margin-left:-60px;
+}
+.total-words {
+  font-size: 2.5em;
+  font-weight: bold;
+  color: #3399CC;
+}
+.all-about {
+  font-size:1.5em;
+  font-weight:bold;
+}

@@ -1,108 +1,159 @@
 var Myrical = (function() {
-  var words = [],
-      filesRead = 0,
+  var filesRead = 0,
       lastFile = false,
       wordCount = 0,
-      uniqueCount = 0,
-      countedWords = [];
+      uniqueCount = 0;
     
   var handleFileSelect = function(evt) {
-   var files = evt.target.files;
-   for (var i = 0, f; f = files[i]; i++) {
-       readBlob(f, files.length);
-   }
+    var files = evt.target.files;
+    for (var i = 0, f; f = files[i]; i++) {
+      readBlob(f, files.length);
+    }
   }
   
   var readBlob = function(file, flength) {
-     var fileWords = [],
-         reader = null,
-         blob = null;
+    var fileWords = [],
+        reader = null,
+        blob = null;
     
-     if (!file) {
-         alert('Please select a file!');
-         return;
-     }
+    if (!file) {
+       alert('Please select a file!');
+       return;
+    }
+    reader = new FileReader();
    
-     reader = new FileReader();
+    if (file.webkitSlice) {
+      blob = file.webkitSlice(0, file.size);
+    } else if (file.mozSlice) {
+      blob = file.mozSlice(0, file.size);
+    } else if (file.slice) {
+      blob = file.slice(0, file.size);
+    }
    
-     if (file.webkitSlice) {
-       blob = file.webkitSlice(0, file.size);
-     } else if (file.mozSlice) {
-       blob = file.mozSlice(0, file.size);
-     } else if (file.slice){
-       blob = file.slice(0, file.size);
-     }
+    reader.readAsBinaryString(blob);
    
-     reader.readAsBinaryString(blob);
-   
-     reader.onloadend = function(evt) {
-         filesRead++;
-         if(filesRead == flength){
-             lastFile = true;
-         }
-         if (evt.target.readyState == FileReader.DONE) {
-             var fileContents = evt.target.result;
-           
-             fileWords = fileContents.match(/\b[A-Za-z']+\b/g);
-             for (var i = 0, j = fileWords.length, word; i < j; i++){
-                 words.push(fileWords[i]);
-             }
-             wordCount = words.length;
-             if(lastFile){
-               processWords(words);
-             }
-         }
-     };
+    reader.onloadend = function(evt) {
+      filesRead++;
+      if (filesRead == flength) {
+        lastFile = true;
+      }
+      if (evt.target.readyState == FileReader.DONE) {
+        var fileContents = evt.target.result;
+        words = processText(fileContents);
+        wordCount = words.length;
+        
+        if (lastFile) {
+          processWords(words);
+        }
+      }
+    };
   }
-
+  
+  var processText = function(fileContents){
+    var words = [],
+        fileWords = [];
+    fileWords = fileContents.match(/\b[A-Za-z']+\b/g);
+    for (var i = 0, j = fileWords.length, word; i < j; i++) {
+      words.push(fileWords[i]);
+    }
+    
+    return words;
+  }
+  
   var processWords = function(words){
     var results = [],
         sameWord = '',
-        word = ''; 
-  
-    for(var i = 0; i < words.length; i++) {
+        word = '',
+        countedWords = {};
+        
+    for (var i = 0; i < words.length; i++) {
       word = words[i];
-      if (countedWords[word]){
+      if (countedWords[word]) {
           countedWords[word].count = countedWords[word].count + 1;
-      }else{
-          ++uniqueCount;
-          countedWords[word] = {
-              name        : word,
-              count       : 1,
-              length      : word.length
-          };
+      } else {
+        ++uniqueCount;
+        countedWords[word] = {
+          name        : word,
+          count       : 1,
+          length      : word.length
+        };
       }
     }
     
-    render();
+    render(countedWords);
   }
   
-  var render = function(){
-    
-    var totalSummary = '<div class="total-words">total words: '+ wordCount + '</div>';
-    var uniqueSummary = '<div class="unique-words">unique words: ' + uniqueCount +'</div>';
-    var topThree = '<div class="top-three">top three used words: ';
-    var longestWords = '<div class="longest">top three longest words: ';
+  
+  var getType = function(words) {
+    var realType = "something",
+        pt = 0,
+        ct = 0,
+        types = {
+          "you": ['I','me','my','mine'],
+          "someone else": ["you","you're", "yours"],
+          "her": ['her','she','hers'],
+          "him": ['him','his','he'],
+          "them": ['them','they','their','theirs']
+        };
+
+        for (var key in types) {
+           pt = 0;
+           var aTypes = types[key];
+           
+           for (var i = 0; i < aTypes.length; i++) {
+             console.log(aTypes[i]);
+             if (words[aTypes[i]]) {
+               console.log(words[aTypes[i]]);
+                pt = pt + words[aTypes[i]].count;
+                console.log(words[aTypes[i]].count);
+             }
+           }
+           
+           console.log(key + ' - ' + pt);
+           if (pt > ct) {
+             (function(){
+               ct = pt;
+              }());
+             realType = key;
+           }
+        }
+       
+        return realType;
+  }
+  var render = function(countedWords){
+    var percentUnique = Math.round((uniqueCount/wordCount) * 100);
+    var restNum = 100 - percentUnique;
+    var chart = '<img class="chart-unique" src="http://chart.apis.google.com/chart?chs=293x205&cht=p&chco=3399CC&chds=0,98.333&chd=t:'+percentUnique+','+restNum+'">';
+    var uniqueWords = chart+'<div class="total-words">'+percentUnique+'% Unique Words</div>';
+    var uniqueExamples = '<p>Such as ';
+    console.log(countedWords);  
+    var subjectType = getType(countedWords);
+    var allAbout = '<p class="all-about">It\'s all about '+subjectType+'.</p>';
     var sortWords = [];
     for (var k in countedWords) {
+      console.log(countedWords[k]);
       sortWords.push(countedWords[k]);
     } 
   
-    sortWords.sort(compareCount);
-    
-    for(var i = 0; i < 3; i++){
-      topThree = topThree + sortWords[i].name+': '+ sortWords[i].count+", ";  
-    }  
-    topThree = topThree + '</div>';
-    
     sortWords.sort(compareLength);
-    
-    for(var i = 0; i < 3; i++){
-      longestWords = longestWords + sortWords[i].name + ", ";  
+    var threeUnique = 0;
+
+    for (var i = 0; i < sortWords.length; i++) {
+      
+      if (sortWords[i].count == 1) {
+        threeUnique++
+        if (threeUnique == 3) {
+          uniqueExamples = uniqueExamples + 'and '+sortWords[i].name + ".";
+          break;
+        } else {
+          uniqueExamples = uniqueExamples + sortWords[i].name + ", ";
+        }
+      }
+      
     }  
-    longestWords = longestWords + '</div>';
+    uniqueExamples = uniqueExamples + '</p>';
     
-    $('#content').html(totalSummary + uniqueSummary + topThree + longestWords);
+    $('#content').html(uniqueWords + uniqueExamples + allAbout);
   
   }
   
@@ -115,7 +166,7 @@ var Myrical = (function() {
   }
   
   var init = function(){
-    $('#files').change(handleFileSelect); 
+    $('#files').change(handleFileSelect);
   }
 
   return {
