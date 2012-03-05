@@ -1,8 +1,22 @@
 var Myrical = (function() {  
   var filesRead = 0,
-      words = [];
-      emotions = ['fear','fearful','feared','anger','angry','angered','sorrow','sorrowful','joy','joyful','joyless','disgust','digusted','digusted','surprise','suprising','suprised','shame','shameful','ashamed','envy','envious','jealous','jealousy','wonder','wonderful','happiness','happy','happier','unhappiness','amusement','amusing','amusement','funny','funnier','weariness','weary','pride','proud','shame','ashamed','nervous','nervously','nervousness','love','loved','loving','hatred','hate','hated','jateful','hope','hoping','hoped','despair'];
-  
+      words = [],
+      emotions = ['fear','fearful','feared','anger','angry','angered','sorrow','sorrowful','joy','joyful','joyless','disgust','digusted','digusted','surprise','suprising','suprised','shame','shameful','ashamed','envy','envious','jealous','jealousy','wonder','wonderful','happiness','happy','happier','unhappiness','amusement','amusing','amusement','funny','funnier','weariness','weary','pride','proud','shame','ashamed','nervous','nervously','nervousness','love','loved','loving','hatred','hate','hated','jateful','hope','hoping','hoped','despair'],
+      types = {
+          "you": ['i','me','my','mine'],
+          "someone else": ["you","you're", "yours"],
+          "her": ['her','she','hers'],
+          "him": ['him','his','he'],
+          "them": ['them','they','their','theirs']
+      },
+      templates = {
+        'pieChart' : '<img title="{{UNIQUECOUNT}} unique words" class="chart-unique" src="http://chart.apis.google.com/chart?chs=293x205&cht=p&chco=3399CC&chds=0,98.333&chd=t:{{PERCENTUNIQUE}},{{COUNT}}">',
+        'uniqueWords' : '<div class="total-words">{{PERCENTUNIQUE}}% Unique Words</div>',
+        'uniqueExamples' : '<p>Such as {{EXA1}}, {{EXA2}}, and {{EXA3}}.</p>',
+        'allAbout' : '<p class="all-about">It\'s all about {{SUBJECT}}.</p>',
+        'emoPercent' : '<p class="emotional">With {{EMOTIONPERCENT}}% emotion.</p>',
+        'emoText' : '<p class="emotional">Without even a hint of emotion.</p>',
+      };
   
   /**
    * Initialise.
@@ -20,14 +34,12 @@ var Myrical = (function() {
         files = evt.target.files,
         fileWords = [],
         lastFile = false,
-        i = 0,
-        j = files.length;
-    
+
     //reset words array;
     words = [];
     filesRead = 0;
     
-    for (i, j; i < j; i++) {
+    for (var i = 0, j = files.length; i < j; i++) {
       file = files[i];
       if (file) {
         readBlob(file, j);
@@ -56,8 +68,6 @@ var Myrical = (function() {
     reader.readAsBinaryString(blob);
     
     reader.onloadend = function(evt) {
-      var i = 0,
-          j = 0;
           
       filesRead++;
       
@@ -70,7 +80,7 @@ var Myrical = (function() {
         fileContents = fileContents.toLowerCase();
         
         fileWords = fileContents.match(/\b[A-Za-z']+\b/g);
-        for (i = 0, j = fileWords.length; i < j; i++) {
+        for (var i = 0, j = fileWords.length; i < j; i++) {
           words.push(fileWords[i]);
         }
         
@@ -90,11 +100,9 @@ var Myrical = (function() {
         sameWord = '',
         word = '',
         countedWords = {},
-        uniqueCount = 0,
-        wordCount = words.length,
-        i = 0;
+        uniqueCount = 0;
         
-    for (i,wordCount; i < wordCount; i++) {
+    for (var i = 0, wordCount = words.length; i < wordCount; i++) {
       word = words[i];
       if (countedWords[word]) {
           countedWords[word].count = countedWords[word].count + 1;
@@ -115,26 +123,13 @@ var Myrical = (function() {
    * Work out the most used personal words (you,him).
    */
   var getType = function(words) {
-    var realType = "something",
-        pt = 0,
-        ct = 0,
-        key = '',
-        i = 0,
-        j = 0,
-        type = null,
-        types = {
-          "you": ['i','me','my','mine'],
-          "someone else": ["you","you're", "yours"],
-          "her": ['her','she','hers'],
-          "him": ['him','his','he'],
-          "them": ['them','they','their','theirs']
-        };
+    var realType = "something";
 
-        for (key in types) {
-           pt = 0;
-           type = types[key];
+        for (var key in types) {
+           var pt = 0;
+           var type = types[key];
            
-           for (i, j = type.length; i < j; i++) {
+           for (var i, j = type.length; i < j; i++) {
              if (words[type[i]]) {
                 pt = pt + words[type[i]].count;
              }
@@ -152,19 +147,16 @@ var Myrical = (function() {
    * Render words object to browser.
    */
   var render = function(countedWords, wordCount, uniqueCount){
+
     var percentUnique = percent(uniqueCount,wordCount),
         restNum = 100 - percentUnique,
-        chart = '<img title="'+uniqueCount+' unique words" class="chart-unique" src="http://chart.apis.google.com/chart?chs=293x205&cht=p&chco=3399CC&chds=0,98.333&chd=t:'+percentUnique+','+restNum+'">',
-        uniqueWords = chart+'<div class="total-words">'+percentUnique+'% Unique Words</div>',
-        uniqueExamples = '<p>Such as ',
+        chart = repvars(templates.pieChart, { 'UNIQUECOUNT' : uniqueCount, 'PERCENTUNIQUE' : percentUnique, 'COUNT' : restNum }),
+        uniqueWords = repvars(templates.uniqueWords, { 'PERCENTUNIQUE' : percentUnique }),
         subjectType = getType(countedWords),
-        allAbout = '<p class="all-about">It\'s all about '+subjectType+'.</p>',
+        allAbout = repvars(templates.allAbout, { 'SUBJECT' : subjectType }),
         sortWords = [],
         threeUnique = 0,
         mostQuestion = 1,
-        key = '',
-        i = 0,
-        j = 0,
         questionText = '',
         questionList = '',
         questionWidth = 21,
@@ -181,41 +173,32 @@ var Myrical = (function() {
           'how':0,
           'who':0
         };
-        
+
     // create array of words and sort
-    for (key in countedWords) {
-      if (questionWords.hasOwnProperty(key)) {
-        questionWords[key] = {};
-        questionWords[key].count = countedWords[key].count;
-        if (countedWords[key].count > mostQuestion) { mostQuestion = countedWords[key].count; }
+    for (var ckey in countedWords) {
+      if (questionWords.hasOwnProperty(ckey)) {
+        questionWords[ckey] = {};
+        questionWords[ckey].count = countedWords[ckey].count;
+        if (countedWords[ckey].count > mostQuestion) { mostQuestion = countedWords[ckey].count; }
       }
-      sortWords.push(countedWords[key]);
+      sortWords.push(countedWords[ckey]);
     }
     sortWords.sort(compareLength);
+    var uniqueExamples = '';
+    if (sortWords.length > 3) {
+        uniqueExamples = repvars(templates.uniqueExamples, { 'EXA1' : sortWords[0].name, 'EXA2' : sortWords[1].name, 'EXA3' : sortWords[2].name });
+    }
     
-    for (i = 0, j = sortWords.length; i < j; i++) {
-      if (sortWords[i].count === 1) {
-        threeUnique++;
-        if (threeUnique === 3) {
-          uniqueExamples = uniqueExamples + 'and ' + sortWords[i].name + ".";
-          break;
-        } else {
-          uniqueExamples = uniqueExamples + sortWords[i].name + ", ";
-        }
-      }
-      
-    }  
-    uniqueExamples = uniqueExamples + '</p>';
     minLength = (mostQuestion.toString()).length;
     
-    for (key in questionWords) {
-      if (questionWords[key].count > 0) {
+    for (var qkey in questionWords) {
+      if (questionWords[qkey].count > 0) {
         hasQuestions = true;
-        perdec = (Math.floor((questionWords[key].count / mostQuestion) * 10));
+        perdec = (Math.floor((questionWords[qkey].count / mostQuestion) * 10));
         if (perdec < minLength) { perdec = minLength; }
         
         questionWidth = 21 * perdec;
-        questionList = questionList + '<li><span style="width:' + questionWidth + 'px">' + questionWords[key].count + ' </span>' + key + '</li>';
+        questionList = questionList + '<li><span style="width:' + questionWidth + 'px">' + questionWords[qkey].count + ' </span>' + qkey + '</li>';
       }
     }
     if (hasQuestions) {
@@ -223,12 +206,12 @@ var Myrical = (function() {
     }
     
     if (emotionalness > 0) {
-      emoText = '<p class="emotional">With ' + emotionalness + '% emotion.</p';
+      emoText = repvars(templates.emoPercent, {'EMOTIONPERCENT' : emotionalness });
     } else {
-      emoText = '<p class="emotional">Without even a hint of emotion.</p>';
+      emoText = templates.emoText;
     }
     
-    $('#content').html(questionText + uniqueWords + uniqueExamples + allAbout + emoText);
+    $('#content').html(questionText + chart + uniqueWords + uniqueExamples + allAbout + emoText);
   
   };
   
@@ -256,9 +239,17 @@ var Myrical = (function() {
   var compareLength = function(a, b) {
     return b.length - a.length;
   };
-  
+
+  var repvars = function(s, strvars) {
+    for(var vkey in strvars){
+      s = s.replace('{{' + vkey + '}}', strvars[vkey]);
+    }
+    return s;
+  }
+
   return {
     init: init
   };
-  
+
 }());
+  
