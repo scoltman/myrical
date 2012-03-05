@@ -184,9 +184,15 @@ var Myrical = (function() {
       sortWords.push(countedWords[ckey]);
     }
     sortWords.sort(compareLength);
-    var uniqueExamples = '';
-    if (sortWords.length > 3) {
-        uniqueExamples = repvars(templates.uniqueExamples, { 'EXA1' : sortWords[0].name, 'EXA2' : sortWords[1].name, 'EXA3' : sortWords[2].name });
+    var uniqueExamples = '',
+        tWords = [];
+
+    for (var i = 0, j = sortWords.length; i < j; i++) {
+      if(sortWords[i].count === 1) tWords.push(sortWords[i].name);
+      if (tWords.length === 3) {
+        uniqueExamples = repvars(templates.uniqueExamples, { 'EXA1' : tWords[0], 'EXA2' : tWords[1], 'EXA3' : tWords[2] });
+        break;
+      }
     }
     
     minLength = (mostQuestion.toString()).length;
