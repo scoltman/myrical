@@ -1,124 +1,140 @@
-var Myrical = (function() {  
-  var filesRead = 0,
-      words = [],
-      emotions = ['fear','fearful','feared','anger','angry','angered','sorrow','sorrowful','joy','joyful','joyless','disgust','digusted','digusted','surprise','suprising','suprised','shame','shameful','ashamed','envy','envious','jealous','jealousy','wonder','wonderful','happiness','happy','happier','unhappiness','amusement','amusing','amusement','funny','funnier','weariness','weary','pride','proud','shame','ashamed','nervous','nervously','nervousness','love','loved','loving','hatred','hate','hated','jateful','hope','hoping','hoped','despair'],
-      types = {
+var Myrical = (function() {
+    var filesRead = 0;
+    var words = [];
+
+    var emotions = [
+    'fear','fearful','feared','anger','angry','angered','sorrow',
+    'sorrowful','joy','joyful','joyless','disgust','digusted','digusted',
+    'surprise','suprising','suprised','shame','shameful','ashamed','envy',
+    'envious','jealous','jealousy','wonder','wonderful','happiness','happy',
+    'happier','unhappiness','amusement','amusing','amusement','funny','funnier',
+    'weariness','weary','pride','proud','shame','ashamed','nervous','nervously',
+    'nervousness','love','loved','loving','hatred','hate','hated','jateful','hope',
+    'hoping','hoped','despair'];
+
+    var types = {
           "you": ['i','me','my','mine'],
           "someone else": ["you","you're", "yours"],
           "her": ['her','she','hers'],
           "him": ['him','his','he'],
           "them": ['them','they','their','theirs']
-      },
-      templates = {
+    };
+
+    var templates = {
         'pieChart' : '<img title="{{UNIQUECOUNT}} unique words" class="chart-unique" src="http://chart.apis.google.com/chart?chs=293x205&cht=p&chco=3399CC&chds=0,98.333&chd=t:{{PERCENTUNIQUE}},{{COUNT}}">',
         'uniqueWords' : '<div class="total-words">{{PERCENTUNIQUE}}% Unique Words</div>',
         'uniqueExamples' : '<p>Such as {{EXA1}}, {{EXA2}}, and {{EXA3}}.</p>',
         'allAbout' : '<p class="all-about">It\'s all about {{SUBJECT}}.</p>',
         'emoPercent' : '<p class="emotional">With {{EMOTIONPERCENT}}% emotion.</p>',
         'emoText' : '<p class="emotional">Without even a hint of emotion.</p>',
-      };
-  
-  /**
-   * Initialise.
-   */
-  var init = function() {
-    $('#files').change(handleFileSelect);
-  };
-  
-  
-  /**
-   * Handles multiple local file select
-   */ 
-  var handleFileSelect = function(evt) {
-    var file = null,
-        files = evt.target.files,
-        fileWords = [],
-        lastFile = false,
-
-    //reset words array;
-    words = [];
-    filesRead = 0;
-    
-    for (var i = 0, j = files.length; i < j; i++) {
-      file = files[i];
-      if (file) {
-        readBlob(file, j);
-      }
-    }
-  };
-  
-  
-  /**
-   * Slices blobs to create a string of file content
-   */
-  var readBlob = function(file, flength) {
-    var reader = null,
-        blob = null;
-        
-    reader = new FileReader();
-    
-    if (file.webkitSlice) {
-      blob = file.webkitSlice(0, file.size);
-    } else if (file.mozSlice) {
-      blob = file.mozSlice(0, file.size);
-    } else if (file.slice) {
-      blob = file.slice(0, file.size);
-    }
-    
-    reader.readAsBinaryString(blob);
-    
-    reader.onloadend = function(evt) {
-          
-      filesRead++;
-      
-      if (filesRead === flength) {
-        lastFile = true;
-      }
-      if (evt.target.readyState === FileReader.DONE) {
-        var fileContents = evt.target.result;
-        
-        fileContents = fileContents.toLowerCase();
-        
-        fileWords = fileContents.match(/\b[A-Za-z']+\b/g);
-        for (var i = 0, j = fileWords.length; i < j; i++) {
-          words.push(fileWords[i]);
-        }
-        
-        if (lastFile) {
-          processWords(words);
-        }
-      }
     };
-  };
-  
-  
+
+    var init = function(){
+        $('#files').change(loadSelectedFiles);
+    };
+
+    /**
+     * Handles multiple local file select
+     */
+    function loadSelectedFiles(e) {
+        if(e.target && e.target.files) {
+            var files = e.target.files;
+            readFiles(files);
+        }
+    }
+
+    /**
+    * Reads files and creates an array for words for each file
+    */
+    function readFiles(files) {
+        var fileContents = []; //reset words list
+        var ln = files.length;
+        var ct = 0;
+        readFile(ct);
+        function readFile(ct){
+            processFile(files[ct]);
+        }
+
+        function processFile(file){
+            var reader = null, blob = null;
+            reader = new FileReader();
+
+            blob = getFilePath(file);
+            reader.readAsBinaryString(blob);
+
+            reader.onloadend = function(e) {
+                if (e.target.readyState === FileReader.DONE) {
+                    fileContents.push(getWordsFromContents(e.target.result));
+                    if(ct < ln) {
+                        readFile(ct++);
+                    }else{
+                        processFileContents(fileContents);
+                    }
+                }
+            };
+
+            function getFilePath(obj){
+                if (obj.webkitSlice) {
+                    return obj.webkitSlice(0, obj.size);
+                } else if (obj.mozSlice) {
+                    return obj.mozSlice(0, obj.size);
+                } else if (obj.slice) {
+                    return obj.slice(0, obj.size);
+                }
+                return {};
+            }
+
+            function getWordsFromContents(contents){
+                var words = [];
+                var fileWords = [];
+
+                contents = contents.toLowerCase(); // make them lower case to match
+                fileWords = contents.match(/\b[A-Za-z']+\b/g);
+
+                for (var i = 0, j = fileWords.length; i < j; i++) {
+                    words.push(fileWords[i]);
+                }
+                return words;
+            }
+        }
+    }
+
+    /**
+    * Process files array containing arrays of words
+    */
+    function processFileContents(contents){
+        var mergedContent = [];
+        mergedContent = mergedContent.concat.apply(mergedContent, contents);
+        processWords(mergedContent);
+
+        function processWords(words){
+            var results = [];
+            var sameWord = '';
+            var word = '';
+            var countedWords = {};
+            var uniqueCount = 0;
+            
+            for (var i = 0, wordCount = words.length; i < wordCount; i++) {
+                word = words[i];
+                if (countedWords[word]) {
+                    countedWords[word].count = countedWords[word].count + 1;
+                } else {
+                    ++uniqueCount;
+                    countedWords[word] = {
+                        name        : word,
+                        count       : 1,
+                        length      : word.length
+                    };
+                }
+            }
+            render(countedWords, wordCount, uniqueCount);
+        }
+    }
+
   /**
    * Create object of 'word' to 'frequency' relationship.
    */
-  var processWords = function(words){
-    var results = [],
-        sameWord = '',
-        word = '',
-        countedWords = {},
-        uniqueCount = 0;
-        
-    for (var i = 0, wordCount = words.length; i < wordCount; i++) {
-      word = words[i];
-      if (countedWords[word]) {
-          countedWords[word].count = countedWords[word].count + 1;
-      } else {
-        ++uniqueCount;
-        countedWords[word] = {
-          name        : word,
-          count       : 1,
-          length      : word.length
-        };
-      }
-    }
-    
-    render(countedWords, wordCount, uniqueCount);
-  };
-  
+
   /**
    * Work out the most used personal words (you,him).
    */
@@ -251,7 +267,7 @@ var Myrical = (function() {
       s = s.replace('{{' + vkey + '}}', strvars[vkey]);
     }
     return s;
-  }
+  };
 
   return {
     init: init
