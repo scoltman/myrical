@@ -127,7 +127,8 @@ var Myrical = (function() {
                     };
                 }
             }
-            render(countedWords, wordCount, uniqueCount);
+            renderCharts(countedWords, wordCount, uniqueCount);
+            renderWords(countedWords, wordCount, uniqueCount);
         }
     }
 
@@ -159,10 +160,22 @@ var Myrical = (function() {
         return realType;
   };
   
+
+  function renderWords(countedWords, wordCount, uniqueCount){
+    var html = '<div style="clear:both">unique = '+uniqueCount+ '<br>count = '+wordCount+'<br><br>';
+
+    for (var key in countedWords) {
+        var obj = countedWords[key];
+        html += (key + " = " + obj.count + ",<br>");
+    }
+
+    html += '</div>';
+    $('#content').append(html);
+  }
   /**
    * Render words object to browser.
    */
-  var render = function(countedWords, wordCount, uniqueCount){
+  var renderCharts = function(countedWords, wordCount, uniqueCount){
 
     var percentUnique = percent(uniqueCount,wordCount),
         restNum = 100 - percentUnique,
