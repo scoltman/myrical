@@ -2,11 +2,9 @@
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <link rel="stylesheet" href="css/normalize.css" type="text/css" />
+    <link rel="stylesheet" href="bower_components/normalize-css/normalize.css" type="text/css" />
     <link rel="stylesheet" href="css/my.css" type="text/css" />
     <title>Myrical</title>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
-    <script src="myrical.js"></script>
   </head>
   <body>
     <div id="header">
@@ -14,10 +12,7 @@
       <input type="file" id="files" name="files[]" multiple/>
     </div>
     <div id="content"></div>
-    <script>
-      $(function() {
-         Myrical.init();
-      });
-    </script>
+    <script src="bower_components/jquery/dist/jquery.min.js"></script>
+    <script src="js/myrical.js"></script>
   </body>
 </html>

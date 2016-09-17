@@ -1,0 +1,9 @@
+{
+  "name": "myrical",
+  "version": "0.2.0",
+  "devDependencies": {
+    "grunt": "^1.0.1",
+    "grunt-bower-requirejs": "^2.0.0",
+    "grunt-contrib-jshint": "^1.0.0"
+  }
+}

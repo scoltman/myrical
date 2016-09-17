@@ -1,0 +1,22 @@
+{
+  "name": "myrical",
+  "description": "lyric analyser",
+  "main": "index.html",
+  "authors": [
+    "Simon Coltman"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/scoltman/myrical",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jquery": "^3.1.0",
+    "normalize-css": "^4.2.0"
+  }
+}
