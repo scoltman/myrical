@@ -1,1 +1,3 @@
-Simple Lyric Analyser, this uses File Reader and so must be viewed through a browser thats supports it. You can select multiple files and it will perform grouped stats about them.
+Simple Lyric Analyser.
+
+This project uses File Reader and so must be viewed through a browser thats supports it. You can select multiple files and it will perform grouped stats about them.
