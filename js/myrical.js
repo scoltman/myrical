@@ -44,8 +44,10 @@
         contents = contents.toLowerCase(); // make them lower case to match
         fileWords = contents.match(/\b[A-Za-z']+\b/g);
 
-        for (var i = 0, j = fileWords.length; i < j; i++) {
-            words.push(fileWords[i]);
+        if(fileWords) {
+          for (var i = 0, j = fileWords.length; i < j; i++) {
+              words.push(fileWords[i]);
+          }
         }
         return words;
     }
